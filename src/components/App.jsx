@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import { Container } from './App.styled';
-// import { fetchImages } from 'services-api/fetchImages';
+import { ToastContainer } from 'react-toastify';
+import fetchImages from 'services-api/fetchImages';
 import SearchBar from './Searchbar/Searchbar';
-import { Grid } from 'react-loader-spinner';
 import ImageGallery from './ImageGallery/ImageGallery';
 import LoadMoreBtn from './LoadMoreBtn/Button';
 import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
-// import axios from 'axios';
-
-
+import {notifications, onEmptyNotification} from './Notifications/notifications';
+import { injectStyle } from 'react-toastify/dist/inject-style';// CALL IT ONCE IN YOUR APP
+injectStyle();
 
 class App extends Component {
   state = {
@@ -23,18 +23,14 @@ class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     const prevQuery = prevState.query;
     const currentQuery = this.state.query;
-    const { page, query } = this.state;
+    const { page } = this.state;
     const perPage = 12;
-    const API_KEY = '31526649-6c5c857b45ffe65514d171168';
 
     if (prevQuery !== currentQuery || prevState.page !== this.state.page) {
       this.setState({ isLoading: true });
 
       setTimeout(() => {
-        fetch(
-          `https://pixabay.com/api/?q=${currentQuery}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
-        )
-          .then(res => res.json())
+        fetchImages(currentQuery, page)
           .then(({ hits, totalHits }) => {
             const totalPages = Math.round(totalHits / perPage);
             const imagesData = hits.map(
@@ -42,11 +38,12 @@ class App extends Component {
                 return { id, webformatURL, largeImageURL };
               }
             );
-            console.log(imagesData);
-            this.setState(({ images }) => ({
+
+            this.setState({
               images: [...this.state.images, ...imagesData],
               totalPages: totalPages,
-            }));
+            });
+            notifications(hits, page, totalHits);
           })
           .catch(error => this.setState({ error }))
           .finally(() => this.setState({ isLoading: false }));
@@ -57,11 +54,15 @@ class App extends Component {
     this.setState(({ page }) => ({ page: page + 1 }));
   };
   openModal = picture => {
-    this.setState({largeImageURL: picture})
+    this.setState({ largeImageURL: picture });
     console.log(picture);
+  };
+  closeModal = () => {
+    this.setState({ largeImageURL: null });
   };
 
   handleSubmit = query => {
+    onEmptyNotification(query)
     this.setState({ query: query });
     if (query !== this.state.query) {
       this.setState({
@@ -85,10 +86,35 @@ class App extends Component {
           <LoadMoreBtn loadMore={this.loadMoreImages} />
         )}
         {this.state.largeImageURL && (
-          <Modal picture={this.state.largeImageURL} />
+          <Modal
+            onCloseModal={this.closeModal}
+            picture={this.state.largeImageURL}
+          />
         )}
+        <ToastContainer autoClose={3000} />
       </Container>
     );
   }
 }
 export default App;
+
+// setTimeout(() => {
+// fetch(
+//   `https://pixabay.com/api/?q=${currentQuery}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
+// )
+//   .then(res => res.json())
+//   .then(({ hits, totalHits }) => {
+//     if (totalHits) {
+//       return toast.success(`We have found ${totalHits} images!`) //----------------
+//     }
+//     if (!totalHits) {
+//       return toast.error(
+//         `We do not have such pictures, try to enter in a different way.`
+//       );
+//     }
+//     const totalPages = Math.round(totalHits / perPage);
+//     const imagesData = hits.map(
+//       ({ id, webformatURL, largeImageURL }) => {
+//         return { id, webformatURL, largeImageURL };
+//       }
+//     );

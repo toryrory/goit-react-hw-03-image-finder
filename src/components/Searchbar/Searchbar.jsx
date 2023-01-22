@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Header, SearchForm, SearchFormButton, ButtonText, SearchFormInput } from './Searchbar.styled';
+import {BsSearch} from 'react-icons/bs'
+import { Header, SearchForm, SearchFormButton, SearchFormInput } from './Searchbar.styled';
 
 class SearchBar extends Component {
   state = {
@@ -20,7 +21,7 @@ class SearchBar extends Component {
           <Header>
             <SearchForm onSubmit={this.handleFormSubmit}>
               <SearchFormButton type="submit">
-                <ButtonText>Search</ButtonText>
+                <BsSearch style={{ width: 25, height: 25 }} />
               </SearchFormButton>
 
               <SearchFormInput
