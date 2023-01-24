@@ -33,17 +33,14 @@ class App extends Component {
     if (prevQuery !== currentQuery || prevState.page !== page) {
       this.setState({ isLoading: true });
 
-      setTimeout(() => {
-        //setTimeout что бы показать лоадер + это асинхронный метод
         fetchImages(currentQuery, page)
           .then(({ hits, totalHits }) => {
-            const totalPages = Math.round(totalHits / perPage);
+            const totalPages = Math.ceil(totalHits / perPage);
             const imagesData = hits.map(
               ({ id, webformatURL, largeImageURL }) => {
                 return { id, webformatURL, largeImageURL };
               }
             );
-
             this.setState({
               images: [...images, ...imagesData],
               totalPages: totalPages,
@@ -52,7 +49,7 @@ class App extends Component {
           })
           .catch(error => this.setState({ error }))
           .finally(() => this.setState({ isLoading: false }));
-      }, 1000);
+     
     }
   }
   loadMoreImages = () => {
