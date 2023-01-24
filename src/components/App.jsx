@@ -43,7 +43,7 @@ class App extends Component {
             );
             this.setState({
               images: [...images, ...imagesData],
-              totalPages: totalPages,
+              hasMoreImages: page < totalPages,
             });
             notifications(hits, page, totalHits);
           })
@@ -75,8 +75,7 @@ class App extends Component {
   };
 
   render() {
-    const { isLoading, images, largeImageURL, page, totalPages } = this.state;
-    const imagesLimit = page < totalPages;
+    const { isLoading, images, largeImageURL, hasMoreImages } = this.state;
 
     return (
       <Container>
@@ -85,7 +84,7 @@ class App extends Component {
         {images.length > 0 && (
           <ImageGallery onClick={this.openModal} images={images} />
         )}
-        {images.length > 0 && imagesLimit && (
+        {images.length > 0 && hasMoreImages && (
           <LoadMoreBtn loadMore={this.loadMoreImages} />
         )}
         {largeImageURL && (
